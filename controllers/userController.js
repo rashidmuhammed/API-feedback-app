@@ -62,7 +62,7 @@ const loginUser = asyncHandler(async (req, res) => {
           role: user.role,
         },
       },
-      process.env.ACCESS_TOKEN_SECRET, // Correct environment variable name
+      process.env.ACCESS_TOKEN_SECRET, 
       { expiresIn: "15m" }
     );
     res.status(200).json({ accessToken });
@@ -126,7 +126,7 @@ const deleteUser = asyncHandler(async (req, res) => {
   if (!delteUserId._id.equals(id)) {
     res.status(403);
     throw new Error(
-      "User doesn't have permission to update other users' contacts"
+      "User doesn't have permission to update other users'"
     );
   }
   await User.findByIdAndDelete(id);
