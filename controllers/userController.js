@@ -7,7 +7,7 @@ const mongoose = require("mongoose");
 // for register
 const registerUser = asyncHandler(async (req, res) => {
   const { email, password, role, name, feedbac } = req.body;
-
+  console.log(req.body);
   // Check for missing fields
   if (!email || !password || !role) {
     res.status(400);
@@ -63,7 +63,7 @@ const loginUser = asyncHandler(async (req, res) => {
           role: user.role,
         },
       },
-      process.env.ACCESS_TOKEN_SECRET, 
+      process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "15m" }
     );
     res.status(200).json({ accessToken });
@@ -80,7 +80,7 @@ const getAllPaginatedUser = asyncHandler(async (req, res) => {
     const skip = (page - 1) * limit;
 
     const users = await User.find({})
-      .select("_id name role feedbac")
+      .select("_id name role feedbac email")
       .skip(skip)
       .limit(limit);
 
@@ -127,7 +127,7 @@ const updateUserById = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("User not found");
   }
-  res.status(200).json(updatedUser);
+  res.status(200).json({ message: "user updated" });
 });
 
 const deleteUser = asyncHandler(async (req, res) => {
@@ -142,9 +142,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 
   if (!delteUserId._id.equals(id)) {
     res.status(403);
-    throw new Error(
-      "User doesn't have permission to update other users'"
-    );
+    throw new Error("User doesn't have permission to update other users'");
   }
   await User.findByIdAndDelete(id);
 
