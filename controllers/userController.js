@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 
 // for register
 const registerUser = asyncHandler(async (req, res) => {
-  const { email, password, role, name } = req.body;
+  const { email, password, role, name, feedbac } = req.body;
 
   // Check for missing fields
   if (!email || !password || !role) {
@@ -28,6 +28,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password: hashedPassword,
     role,
     name,
+    feedbac,
   });
 
   console.log(`User created ${user}`);
@@ -72,10 +73,26 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
-const getAllUser = asyncHandler(async (req, res) => {
+const getAllPaginatedUser = asyncHandler(async (req, res) => {
   try {
-    const users = await User.find({}).select("_id name");
-    res.status(200).json(users);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const users = await User.find({})
+      .select("_id name role feedbac")
+      .skip(skip)
+      .limit(limit);
+
+    const totalUsers = await User.countDocuments();
+    const totalPages = Math.ceil(totalUsers / limit);
+
+    res.status(200).json({
+      users,
+      page,
+      totalPages,
+      totalUsers,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -137,7 +154,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
-  getAllUser,
+  getAllPaginatedUser,
   updateUserById,
   deleteUser,
 };
