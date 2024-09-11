@@ -9,7 +9,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const { email, password, role, name, feedbac } = req.body;
   console.log(req.body);
   // Check for missing fields
-  if (!email || !password || !role) {
+  if (!email || !role) {
     res.status(400);
     throw new Error("All fields are mandatory!");
   }
@@ -149,10 +149,36 @@ const deleteUser = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "User deleted successfully" });
 });
 
+const getAllUsers = asyncHandler(async (req, res) => {
+  try {
+    const users = await User.find().select("_id name role feedbac email");
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+const getUserById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findById(id).select("_id name role feedbac email");
+
+    if (user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = {
   registerUser,
   loginUser,
   getAllPaginatedUser,
   updateUserById,
   deleteUser,
+  getAllUsers,
+  getUserById,
 };
