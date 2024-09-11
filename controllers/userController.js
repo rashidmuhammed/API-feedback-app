@@ -101,24 +101,31 @@ const getAllPaginatedUser = asyncHandler(async (req, res) => {
 const updateUserById = asyncHandler(async (req, res) => {
   const { id } = req.query;
   console.log(id);
+
   if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400);
     throw new Error("Invalid User ID");
   }
 
-  const editUserId = await User.findById(id);
+  const existingUser = await User.findById(id);
 
-  if (!editUserId) {
+  if (!existingUser) {
     res.status(404);
     throw new Error("User not found");
   }
 
-  if (!editUserId._id.equals(id)) {
+  if (!existingUser._id.equals(id)) {
     res.status(403);
     throw new Error("User doesn't have permission to update other users'");
   }
 
-  const updatedUser = await User.findByIdAndUpdate(id, req.body, {
+  const { password, ...updateData } = req.body;
+
+  if (!password) {
+    updateData.password = existingUser.password;
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(id, updateData, {
     new: true,
     runValidators: true,
   });
@@ -127,7 +134,8 @@ const updateUserById = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("User not found");
   }
-  res.status(200).json({ message: "user updated" });
+
+  res.status(200).json({ message: "User updated", user: updatedUser });
 });
 
 const deleteUser = asyncHandler(async (req, res) => {
